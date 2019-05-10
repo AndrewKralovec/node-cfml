@@ -5,6 +5,7 @@ const fs = require('fs'),
 	tags = {
 		cfabort: require('./lib/cfabort'),
 		cfbreak: require('./lib/cfbreak'),
+		cfextends: require('./lib/cfextends'),
 		cfif: require('./lib/cfif'),
 		cfinclude: require('./lib/cfinclude'),
 		cfloop: require('./lib/cfloop'),
@@ -20,7 +21,6 @@ const fs = require('fs'),
 	REQuoteOrGT = /['">]/,
 	REAttribNameDelim = /[\s=>]/,
 	RESpace = /\s/
-
 
 function parse(str, line, path, evalVars) {
 	const buf = []
@@ -134,6 +134,7 @@ function processTag(str, buf, evalVars, line, path) {
 	}
 
 	if (tagDef.afterEnd) tagDef.afterEnd(tag, str, buf, parseFile)
+	else if (tagDef.afterProcess) str = tagDef.afterProcess(tag, str)
 	else buf.push(tag)
 
 	processQueue(str, buf, tag.evalVars, line, path)
@@ -172,7 +173,7 @@ function processExpression(tag, str, buf, evalVars, line, path) {
 				str = str.slice(pos)
 				continue
 			}
-			
+
 			// '>' found
 			tag.expression += str.slice(0, pos)
 			str = str.slice(pos + 1)
